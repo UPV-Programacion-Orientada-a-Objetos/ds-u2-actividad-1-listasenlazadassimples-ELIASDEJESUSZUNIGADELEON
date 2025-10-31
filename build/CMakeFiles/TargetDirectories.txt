@@ -1,0 +1,3 @@
+C:/Users/resen/Downloads/sp32/build/CMakeFiles/SistemaIoT.dir
+C:/Users/resen/Downloads/sp32/build/CMakeFiles/edit_cache.dir
+C:/Users/resen/Downloads/sp32/build/CMakeFiles/rebuild_cache.dir
