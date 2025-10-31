@@ -14,14 +14,11 @@ public:
 
     SensorTemperatura(const char* nombreSensor) : SensorBase(nombreSensor) {
         lecturas = new ListaSensor<float>();
-        std::cout << "SensorTemperatura creado: " << nombre << std::endl;
+        std::cout << "[CONSTRUCTOR] SensorTemperatura creado: " << nombre << std::endl;
     }
 
-    /**
-     * @brief Destructor que libera la memoria de la lista
-     */
     ~SensorTemperatura() override {
-        std::cout << "Liberando SensorTemperatura: " << nombre << std::endl;
+        std::cout << "[DESTRUCTOR] Liberando SensorTemperatura: " << nombre << std::endl;
         delete lecturas;
     }
 
@@ -54,7 +51,7 @@ public:
     }
 
     void mostrarEstado() const override {
-        std::cout << "\nSensor: " << nombre << std::endl;
+        std::cout << "\n[ESTADO] Sensor: " << nombre << std::endl;
         std::cout << "         Tipo: Temperatura (float)" << std::endl;
         std::cout << "         Lecturas almacenadas: " << lecturas->obtenerTamanio() << std::endl;
         

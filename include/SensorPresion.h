@@ -13,11 +13,11 @@ public:
 
     SensorPresion(const char* nombreSensor) : SensorBase(nombreSensor) {
         lecturas = new ListaSensor<int>();
-        std::cout << "SensorPresion creado: " << nombre << std::endl;
+        std::cout << "[CONSTRUCTOR] SensorPresion creado: " << nombre << std::endl;
     }
 
     ~SensorPresion() override {
-        std::cout << "Liberando SensorPresion: " << nombre << std::endl;
+        std::cout << "[DESTRUCTOR] Liberando SensorPresion: " << nombre << std::endl;
         delete lecturas;
     }
 
@@ -49,7 +49,7 @@ public:
     }
 
     void mostrarEstado() const override {
-        std::cout << "\nSensor: " << nombre << std::endl;
+        std::cout << "\n[ESTADO] Sensor: " << nombre << std::endl;
         std::cout << "         Tipo: Presion (int)" << std::endl;
         std::cout << "         Lecturas almacenadas: " << lecturas->obtenerTamanio() << std::endl;
         
@@ -60,10 +60,6 @@ public:
         }
     }
 
-    /**
-     * @brief Obtiene el numero de lecturas almacenadas
-     * @return int Cantidad de lecturas
-     */
     int obtenerNumLecturas() const override {
         return lecturas->obtenerTamanio();
     }

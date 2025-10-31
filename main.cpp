@@ -4,197 +4,176 @@
 #include "ListaSensor.h"
 #include "SensorTemperatura.h"
 #include "SensorPresion.h"
+#include "ListaGestion.h"
 
-using namespace std;
-
-// Variables globales para prueba (luego se usara lista de gestion)
-SensorTemperatura* sensorTemp = nullptr;
-SensorPresion* sensorPres = nullptr;
+// Lista global polimorfica para gestionar todos los sensores
+ListaGestion* listaGlobal = nullptr;
 
 void mostrarMenu() {
-    cout << "\n========================================" << endl;
-    cout << "  Sistema IoT - Monitoreo Polimorfico  " << endl;
-    cout << "========================================" << endl;
-    cout << "1. Crear Sensor de Temperatura" << endl;
-    cout << "2. Crear Sensor de Presion" << endl;
-    cout << "3. Registrar Lectura Manual" << endl;
-    cout << "4. Leer Datos desde ESP32 (Serial)" << endl;
-    cout << "5. Procesar Todos los Sensores" << endl;
-    cout << "6. Mostrar Estado de Sensores" << endl;
-    cout << "7. Salir y Liberar Memoria" << endl;
-    cout << "========================================" << endl;
-    cout << "Opcion: ";
+    std::cout << "\n========================================" << std::endl;
+    std::cout << "  Sistema IoT - Monitoreo Polimorfico  " << std::endl;
+    std::cout << "========================================" << std::endl;
+    std::cout << "1. Crear Sensor de Temperatura" << std::endl;
+    std::cout << "2. Crear Sensor de Presion" << std::endl;
+    std::cout << "3. Registrar Lectura Manual" << std::endl;
+    std::cout << "4. Leer Datos desde ESP32 (Serial)" << std::endl;
+    std::cout << "5. Procesar Todos los Sensores" << std::endl;
+    std::cout << "6. Mostrar Estado de Sensores" << std::endl;
+    std::cout << "7. Salir y Liberar Memoria" << std::endl;
+    std::cout << "========================================" << std::endl;
+    std::cout << "Opcion: ";
 }
 
 void crearSensorTemperatura() {
-    cout << "\n[LOG] Creando Sensor de Temperatura..." << endl;
+    std::cout << "\n[LOG] Creando Sensor de Temperatura..." << std::endl;
     
-    if (sensorTemp != nullptr) {
-        cout << "[WARNING] Ya existe un sensor de temperatura. Eliminando el anterior..." << endl;
-        delete sensorTemp;
+    std::cout << "Ingresa el ID del sensor (ej: T-001): ";
+    char id[50];
+    std::cin >> id;
+    
+    // Verificar si ya existe
+    if (listaGlobal->buscarSensor(id) != nullptr) {
+        std::cout << "[WARNING] Ya existe un sensor con ese ID" << std::endl;
+        return;
     }
     
-    sensorTemp = new SensorTemperatura("T-001");
-    cout << "[SUCCESS] Sensor de temperatura creado exitosamente" << endl;
+    SensorTemperatura* nuevoSensor = new SensorTemperatura(id);
+    listaGlobal->agregarSensor(nuevoSensor);
+    std::cout << "[SUCCESS] Sensor de temperatura creado exitosamente" << std::endl;
 }
 
 void crearSensorPresion() {
-    cout << "\n[LOG] Creando Sensor de Presion..." << endl;
+    std::cout << "\n[LOG] Creando Sensor de Presion..." << std::endl;
     
-    if (sensorPres != nullptr) {
-        cout << "[WARNING] Ya existe un sensor de presion. Eliminando el anterior..." << endl;
-        delete sensorPres;
+    std::cout << "Ingresa el ID del sensor (ej: P-105): ";
+    char id[50];
+    std::cin >> id;
+    
+    // Verificar si ya existe
+    if (listaGlobal->buscarSensor(id) != nullptr) {
+        std::cout << "[WARNING] Ya existe un sensor con ese ID" << std::endl;
+        return;
     }
     
-    sensorPres = new SensorPresion("P-105");
-    cout << "[SUCCESS] Sensor de presion creado exitosamente" << endl;
+    SensorPresion* nuevoSensor = new SensorPresion(id);
+    listaGlobal->agregarSensor(nuevoSensor);
+    std::cout << "[SUCCESS] Sensor de presion creado exitosamente" << std::endl;
 }
 
 void registrarLectura() {
-    cout << "\n[LOG] Registrando Lectura Manual..." << endl;
+    std::cout << "\n[LOG] Registrando Lectura Manual..." << std::endl;
     
-    int tipoSensor;
-    cout << "Selecciona tipo de sensor:" << endl;
-    cout << "1. Temperatura" << endl;
-    cout << "2. Presion" << endl;
-    cout << "Opcion: ";
-    cin >> tipoSensor;
+    if (listaGlobal->getCantidad() == 0) {
+        std::cout << "[ERROR] No hay sensores creados. Crea uno primero." << std::endl;
+        return;
+    }
     
-    if (tipoSensor == 1) {
-        if (sensorTemp == nullptr) {
-            cout << "[ERROR] No existe sensor de temperatura. Crealo primero (opcion 1)" << endl;
-            return;
-        }
-        
+    std::cout << "Ingresa el ID del sensor: ";
+    char id[50];
+    std::cin >> id;
+    
+    SensorBase* sensor = listaGlobal->buscarSensor(id);
+    
+    if (sensor == nullptr) {
+        std::cout << "[ERROR] Sensor no encontrado: " << id << std::endl;
+        return;
+    }
+    
+    // Determinar tipo y agregar lectura (downcasting seguro)
+    SensorTemperatura* sensorTemp = dynamic_cast<SensorTemperatura*>(sensor);
+    if (sensorTemp != nullptr) {
         float valor;
-        cout << "Ingresa temperatura (C): ";
-        cin >> valor;
+        std::cout << "Ingresa temperatura (C): ";
+        std::cin >> valor;
         sensorTemp->agregarLectura(valor);
-        
-    } else if (tipoSensor == 2) {
-        if (sensorPres == nullptr) {
-            cout << "[ERROR] No existe sensor de presion. Crealo primero (opcion 2)" << endl;
-            return;
-        }
-        
+        return;
+    }
+    
+    SensorPresion* sensorPres = dynamic_cast<SensorPresion*>(sensor);
+    if (sensorPres != nullptr) {
         int valor;
-        cout << "Ingresa presion (hPa): ";
-        cin >> valor;
+        std::cout << "Ingresa presion (hPa): ";
+        std::cin >> valor;
         sensorPres->agregarLectura(valor);
-        
-    } else {
-        cout << "[ERROR] Opcion invalida" << endl;
+        return;
     }
 }
 
 void leerDesdeSerial() {
-    cout << "\nLeyendo datos desde ESP32..." << endl;
-    cout << "Implementar lectura serial" << endl;
+    std::cout << "\n[LOG] Leyendo datos desde ESP32..." << std::endl;
+    std::cout << "[PENDING] Implementar lectura serial" << std::endl;
     //Abrir puerto COM9 (o el que corresponda)
     //Parsear lineas: "T-001,23.5" o "P-105,1013"
     //Crear sensores dinamicamente o agregar lecturas
 }
 
 void procesarSensores() {
-    cout << "\n[LOG] Procesando todos los sensores..." << endl;
-    
-    bool hayAlgunSensor = false;
-    
-    if (sensorTemp != nullptr) {
-        sensorTemp->procesarLectura();
-        hayAlgunSensor = true;
-    }
-    
-    if (sensorPres != nullptr) {
-        sensorPres->procesarLectura();
-        hayAlgunSensor = true;
-    }
-    
-    if (!hayAlgunSensor) {
-        cout << "[WARNING] No hay sensores creados aun" << endl;
-    }
+    std::cout << "\n[LOG] Procesando todos los sensores polimorficamente..." << std::endl;
+    listaGlobal->procesarTodos();
 }
 
 void mostrarEstado() {
-    cout << "\n[LOG] Estado actual de los sensores:" << endl;
-    
-    bool hayAlgunSensor = false;
-    
-    if (sensorTemp != nullptr) {
-        sensorTemp->mostrarEstado();
-        hayAlgunSensor = true;
-    }
-    
-    if (sensorPres != nullptr) {
-        sensorPres->mostrarEstado();
-        hayAlgunSensor = true;
-    }
-    
-    if (!hayAlgunSensor) {
-        cout << "[WARNING] No hay sensores creados aun" << endl;
-    }
+    std::cout << "\n[LOG] Estado actual del sistema:" << std::endl;
+    listaGlobal->mostrarTodos();
 }
 
 void liberarMemoria() {
-    cout << "\n[LOG] Liberando memoria..." << endl;
+    std::cout << "\n[LOG] Liberando toda la memoria del sistema..." << std::endl;
     
-    if (sensorTemp != nullptr) {
-        delete sensorTemp;
-        sensorTemp = nullptr;
+    if (listaGlobal != nullptr) {
+        delete listaGlobal;
+        listaGlobal = nullptr;
     }
     
-    if (sensorPres != nullptr) {
-        delete sensorPres;
-        sensorPres = nullptr;
-    }
-    
-    cout << "[SUCCESS] Memoria liberada correctamente" << endl;
+    std::cout << "[SUCCESS] Memoria liberada correctamente" << std::endl;
 }
 
 void pruebaListaGenerica() {
-    cout << "\n=== PRUEBA: Lista Generica con Float ===" << endl;
+    std::cout << "\n=== PRUEBA: Lista Generica con Float ===" << std::endl;
     ListaSensor<float> listaTemp;
     listaTemp.insertar(23.5f);
     listaTemp.insertar(24.1f);
     listaTemp.insertar(22.8f);
     listaTemp.mostrar();
-    cout << "Promedio: " << listaTemp.calcularPromedio() << endl;
-    cout << "Maximo: " << listaTemp.obtenerMaximo() << endl;
-    cout << "Minimo: " << listaTemp.obtenerMinimo() << endl;
+    std::cout << "Promedio: " << listaTemp.calcularPromedio() << std::endl;
+    std::cout << "Maximo: " << listaTemp.obtenerMaximo() << std::endl;
+    std::cout << "Minimo: " << listaTemp.obtenerMinimo() << std::endl;
     
-    cout << "\n=== PRUEBA: Lista Generica con Int ===" << endl;
+    std::cout << "\n=== PRUEBA: Lista Generica con Int ===" << std::endl;
     ListaSensor<int> listaPresion;
     listaPresion.insertar(1013);
     listaPresion.insertar(1015);
     listaPresion.insertar(1012);
     listaPresion.mostrar();
-    cout << "Promedio: " << listaPresion.calcularPromedio() << endl;
-    cout << "Maximo: " << listaPresion.obtenerMaximo() << endl;
-    cout << "Minimo: " << listaPresion.obtenerMinimo() << endl;
+    std::cout << "Promedio: " << listaPresion.calcularPromedio() << std::endl;
+    std::cout << "Maximo: " << listaPresion.obtenerMaximo() << std::endl;
+    std::cout << "Minimo: " << listaPresion.obtenerMinimo() << std::endl;
 }
 
 int main() {
     int opcion = 0;
     bool continuar = true;
     
-    cout << "\n=== Sistema IoT de Monitoreo Polimorfico ===" << endl;
-    cout << "Version 4 - SensorTemperatura + SensorPresion funcionando" << endl;
-    cout << "Sistema inicializado correctamente." << endl;
+    std::cout << "\n=== Sistema IoT de Monitoreo Polimorfico ===" << std::endl;
+    std::cout << "Version 5 - ListaGestion Polimorfica Implementada" << std::endl;
+    std::cout << "Sistema inicializado correctamente." << std::endl;
+    
+    // Inicializar lista de gestion polimorfica
+    listaGlobal = new ListaGestion();
     
     // Prueba inicial comentada (ya funcionan las clases)
     // pruebaListaGenerica();
-    // cout << "\n--- Presiona ENTER para continuar al menu ---" << endl;
-    // cin.get();
+    // std::cout << "\n--- Presiona ENTER para continuar al menu ---" << std::endl;
+    // std::cin.get();
 
     //Crear instancia de ListaGestion (lista de SensorBase*)
-    // ListaGestion* listaGlobal = new ListaGestion();
     
     while (continuar) {
         mostrarMenu();
-        cin >> opcion;
+        std::cin >> opcion;
         
         // Limpiar buffer de entrada
-        cin.ignore(1000, '\n');
+        std::cin.ignore(1000, '\n');
         
         switch (opcion) {
             case 1:
@@ -216,15 +195,15 @@ int main() {
                 mostrarEstado();
                 break;
             case 7:
-                cout << "\nCerrando sistema..." << endl;
+                std::cout << "\n[SYSTEM] Cerrando sistema..." << std::endl;
                 liberarMemoria();
                 continuar = false;
                 break;
             default:
-                cout << "\nOpcion invalida. Intente de nuevo." << endl;
+                std::cout << "\n[ERROR] Opcion invalida. Intente de nuevo." << std::endl;
         }
     }
 
-    cout << "\nSistema cerrado correctamente." << endl;
+    std::cout << "\n[SYSTEM] Sistema cerrado correctamente." << std::endl;
     return 0;
 }
