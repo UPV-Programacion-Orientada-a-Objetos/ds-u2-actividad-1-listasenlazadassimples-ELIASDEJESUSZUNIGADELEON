@@ -1,13 +1,18 @@
 #include <iostream>
 #include <cstdlib>
+#include <cstring>
 #include "SensorBase.h"
 #include "ListaSensor.h"
 #include "SensorTemperatura.h"
 #include "SensorPresion.h"
 #include "ListaGestion.h"
+#include "SerialReader.h"
 
 // Lista global polimorfica para gestionar todos los sensores
 ListaGestion* listaGlobal = nullptr;
+
+// Lector serial global
+SerialReader* lectorSerial = nullptr;
 
 void mostrarMenu() {
     std::cout << "\n========================================" << std::endl;
@@ -101,10 +106,104 @@ void registrarLectura() {
 
 void leerDesdeSerial() {
     std::cout << "\n[LOG] Leyendo datos desde ESP32..." << std::endl;
-    std::cout << "[PENDING] Implementar lectura serial" << std::endl;
-    //Abrir puerto COM9 (o el que corresponda)
-    //Parsear lineas: "T-001,23.5" o "P-105,1013"
-    //Crear sensores dinamicamente o agregar lecturas
+    
+    if (lectorSerial == nullptr) {
+        lectorSerial = new SerialReader();
+    }
+    
+    if (!lectorSerial->estaConectado()) {
+        // Detectar puerto automaticamente segun el sistema operativo
+#ifdef _WIN32
+        const char* puerto = "COM9";  // Windows
+#elif __linux__
+        const char* puerto = "/dev/ttyUSB0";  // Linux
+#else
+        const char* puerto = "UNKNOWN";
+#endif
+        
+        std::cout << "[INFO] Intentando conectar al puerto: " << puerto << std::endl;
+        
+        if (!lectorSerial->conectar(puerto)) {
+            std::cout << "[ERROR] No se pudo conectar al ESP32" << std::endl;
+            std::cout << "[HINT] Verifica que el ESP32 este conectado y enviando datos" << std::endl;
+            return;
+        }
+    }
+    
+    std::cout << "[SERIAL] Esperando datos del ESP32..." << std::endl;
+    std::cout << "[INFO] Formato esperado: 'T-001,23.5' o 'P-105,1013'" << std::endl;
+    std::cout << "[INFO] Presiona Ctrl+C para cancelar" << std::endl;
+    
+    char linea[256];
+    int lecturasRecibidas = 0;
+    int intentos = 0;
+    const int MAX_INTENTOS = 50;  // 5 segundos aprox
+    
+    while (intentos < MAX_INTENTOS && lecturasRecibidas < 10) {
+        if (lectorSerial->leerLinea(linea, sizeof(linea))) {
+            std::cout << "[RECV] " << linea << std::endl;
+            
+            // Parsear: "T-001,23.5" o "P-105,1013"
+            char id[50];
+            char valorStr[50];
+            
+            char* coma = strchr(linea, ',');
+            if (coma != nullptr) {
+                int idLen = coma - linea;
+                strncpy(id, linea, idLen);
+                id[idLen] = '\0';
+                strcpy(valorStr, coma + 1);
+                
+                // Determinar tipo de sensor por el prefijo
+                if (id[0] == 'T' || id[0] == 't') {
+                    // Sensor de temperatura
+                    SensorBase* sensor = listaGlobal->buscarSensor(id);
+                    
+                    if (sensor == nullptr) {
+                        // Crear sensor automaticamente
+                        std::cout << "[AUTO] Creando sensor de temperatura: " << id << std::endl;
+                        SensorTemperatura* nuevoSensor = new SensorTemperatura(id);
+                        listaGlobal->agregarSensor(nuevoSensor);
+                        sensor = nuevoSensor;
+                    }
+                    
+                    SensorTemperatura* sensorTemp = dynamic_cast<SensorTemperatura*>(sensor);
+                    if (sensorTemp != nullptr) {
+                        float valor = atof(valorStr);
+                        sensorTemp->agregarLectura(valor);
+                        lecturasRecibidas++;
+                    }
+                    
+                } else if (id[0] == 'P' || id[0] == 'p') {
+                    // Sensor de presion
+                    SensorBase* sensor = listaGlobal->buscarSensor(id);
+                    
+                    if (sensor == nullptr) {
+                        // Crear sensor automaticamente
+                        std::cout << "[AUTO] Creando sensor de presion: " << id << std::endl;
+                        SensorPresion* nuevoSensor = new SensorPresion(id);
+                        listaGlobal->agregarSensor(nuevoSensor);
+                        sensor = nuevoSensor;
+                    }
+                    
+                    SensorPresion* sensorPres = dynamic_cast<SensorPresion*>(sensor);
+                    if (sensorPres != nullptr) {
+                        int valor = atoi(valorStr);
+                        sensorPres->agregarLectura(valor);
+                        lecturasRecibidas++;
+                    }
+                }
+            }
+        }
+        intentos++;
+    }
+    
+    if (lecturasRecibidas > 0) {
+        std::cout << "[SUCCESS] Se recibieron " << lecturasRecibidas << " lecturas del ESP32" << std::endl;
+    } else {
+        std::cout << "[WARNING] No se recibieron datos del ESP32" << std::endl;
+        std::cout << "[HINT] Verifica que el ESP32 este enviando datos por serial" << std::endl;
+    }
 }
 
 void procesarSensores() {
@@ -119,6 +218,11 @@ void mostrarEstado() {
 
 void liberarMemoria() {
     std::cout << "\n[LOG] Liberando toda la memoria del sistema..." << std::endl;
+    
+    if (lectorSerial != nullptr) {
+        delete lectorSerial;
+        lectorSerial = nullptr;
+    }
     
     if (listaGlobal != nullptr) {
         delete listaGlobal;
