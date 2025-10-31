@@ -2,8 +2,14 @@
 #include <cstdlib>
 #include "SensorBase.h"
 #include "ListaSensor.h"
+#include "SensorTemperatura.h"
+#include "SensorPresion.h"
 
 using namespace std;
+
+// Variables globales para prueba (luego se usara lista de gestion)
+SensorTemperatura* sensorTemp = nullptr;
+SensorPresion* sensorPres = nullptr;
 
 void mostrarMenu() {
     cout << "\n========================================" << endl;
@@ -21,25 +27,64 @@ void mostrarMenu() {
 }
 
 void crearSensorTemperatura() {
-    cout << "\nCreando Sensor de Temperatura..." << endl;
-    cout << "Implementar clase SensorTemperatura" << endl;
-    //Crear instancia de SensorTemperatura
-    //Agregar a ListaGestion
+    cout << "\n[LOG] Creando Sensor de Temperatura..." << endl;
+    
+    if (sensorTemp != nullptr) {
+        cout << "[WARNING] Ya existe un sensor de temperatura. Eliminando el anterior..." << endl;
+        delete sensorTemp;
+    }
+    
+    sensorTemp = new SensorTemperatura("T-001");
+    cout << "[SUCCESS] Sensor de temperatura creado exitosamente" << endl;
 }
 
 void crearSensorPresion() {
-    cout << "\nCreando Sensor de Presion..." << endl;
-    cout << "Implementar clase SensorPresion" << endl;
-    // Crear instancia de SensorPresion
-    // Agregar a ListaGestion
+    cout << "\n[LOG] Creando Sensor de Presion..." << endl;
+    
+    if (sensorPres != nullptr) {
+        cout << "[WARNING] Ya existe un sensor de presion. Eliminando el anterior..." << endl;
+        delete sensorPres;
+    }
+    
+    sensorPres = new SensorPresion("P-105");
+    cout << "[SUCCESS] Sensor de presion creado exitosamente" << endl;
 }
 
 void registrarLectura() {
-    cout << "\nRegistrando Lectura Manual..." << endl;
-    cout << "Implementar metodo agregarLectura()" << endl;
-    //Pedir ID del sensor
-    //Pedir valor de lectura
-    //Llamar a sensor->agregarLectura()
+    cout << "\n[LOG] Registrando Lectura Manual..." << endl;
+    
+    int tipoSensor;
+    cout << "Selecciona tipo de sensor:" << endl;
+    cout << "1. Temperatura" << endl;
+    cout << "2. Presion" << endl;
+    cout << "Opcion: ";
+    cin >> tipoSensor;
+    
+    if (tipoSensor == 1) {
+        if (sensorTemp == nullptr) {
+            cout << "[ERROR] No existe sensor de temperatura. Crealo primero (opcion 1)" << endl;
+            return;
+        }
+        
+        float valor;
+        cout << "Ingresa temperatura (C): ";
+        cin >> valor;
+        sensorTemp->agregarLectura(valor);
+        
+    } else if (tipoSensor == 2) {
+        if (sensorPres == nullptr) {
+            cout << "[ERROR] No existe sensor de presion. Crealo primero (opcion 2)" << endl;
+            return;
+        }
+        
+        int valor;
+        cout << "Ingresa presion (hPa): ";
+        cin >> valor;
+        sensorPres->agregarLectura(valor);
+        
+    } else {
+        cout << "[ERROR] Opcion invalida" << endl;
+    }
 }
 
 void leerDesdeSerial() {
@@ -51,29 +96,61 @@ void leerDesdeSerial() {
 }
 
 void procesarSensores() {
-    cout << "\nProcesando todos los sensores..." << endl;
-    cout << "Implementar procesamiento polimorfico" << endl;
-    //Iterar sobre ListaGestion
-    //Llamar a sensor->procesarLectura() para cada uno
+    cout << "\n[LOG] Procesando todos los sensores..." << endl;
+    
+    bool hayAlgunSensor = false;
+    
+    if (sensorTemp != nullptr) {
+        sensorTemp->procesarLectura();
+        hayAlgunSensor = true;
+    }
+    
+    if (sensorPres != nullptr) {
+        sensorPres->procesarLectura();
+        hayAlgunSensor = true;
+    }
+    
+    if (!hayAlgunSensor) {
+        cout << "[WARNING] No hay sensores creados aun" << endl;
+    }
 }
 
 void mostrarEstado() {
-    cout << "\nEstado actual de los sensores:" << endl;
-    cout << "Implementar metodo mostrarEstado()" << endl;
-    //Iterar y mostrar info de cada sensor
-    //Mostrar numero de lecturas almacenadas
+    cout << "\n[LOG] Estado actual de los sensores:" << endl;
+    
+    bool hayAlgunSensor = false;
+    
+    if (sensorTemp != nullptr) {
+        sensorTemp->mostrarEstado();
+        hayAlgunSensor = true;
+    }
+    
+    if (sensorPres != nullptr) {
+        sensorPres->mostrarEstado();
+        hayAlgunSensor = true;
+    }
+    
+    if (!hayAlgunSensor) {
+        cout << "[WARNING] No hay sensores creados aun" << endl;
+    }
 }
 
 void liberarMemoria() {
-    cout << "\nLiberando memoria..." << endl;
-    cout << "Implementar destructores" << endl;
-    //Eliminar todos los nodos de las listas
-    // TODO: Eliminar todos los sensores de ListaGestion
+    cout << "\n[LOG] Liberando memoria..." << endl;
+    
+    if (sensorTemp != nullptr) {
+        delete sensorTemp;
+        sensorTemp = nullptr;
+    }
+    
+    if (sensorPres != nullptr) {
+        delete sensorPres;
+        sensorPres = nullptr;
+    }
+    
+    cout << "[SUCCESS] Memoria liberada correctamente" << endl;
 }
 
-/**
- * @brief Funcion de prueba para verificar ListaSensor con templates
- */
 void pruebaListaGenerica() {
     cout << "\n=== PRUEBA: Lista Generica con Float ===" << endl;
     ListaSensor<float> listaTemp;
@@ -101,16 +178,15 @@ int main() {
     bool continuar = true;
     
     cout << "\n=== Sistema IoT de Monitoreo Polimorfico ===" << endl;
-    cout << "Version 3 - SensorBase + ListaSensor<T> implementadas" << endl;
+    cout << "Version 4 - SensorTemperatura + SensorPresion funcionando" << endl;
     cout << "Sistema inicializado correctamente." << endl;
     
-    // Prueba de las clases recien creadas
-    cout << "\n--- Probando clases base antes del menu ---" << endl;
-    pruebaListaGenerica();
-    cout << "\n--- Presiona ENTER para continuar al menu ---" << endl;
-    cin.get();
+    // Prueba inicial comentada (ya funcionan las clases)
+    // pruebaListaGenerica();
+    // cout << "\n--- Presiona ENTER para continuar al menu ---" << endl;
+    // cin.get();
 
-    // Crear instancia de ListaGestion (lista de SensorBase*)
+    //Crear instancia de ListaGestion (lista de SensorBase*)
     // ListaGestion* listaGlobal = new ListaGestion();
     
     while (continuar) {

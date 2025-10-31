@@ -15,7 +15,7 @@ public:
     }
 
     virtual ~SensorBase() {
-        std::cout << "[DESTRUCTOR] Liberando sensor: " << nombre << std::endl;
+        std::cout << "Liberando sensor: " << nombre << std::endl;
     }
 
     const char* getNombre() const {
