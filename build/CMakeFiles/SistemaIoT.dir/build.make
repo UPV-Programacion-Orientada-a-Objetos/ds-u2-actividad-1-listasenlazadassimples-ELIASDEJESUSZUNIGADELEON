@@ -72,6 +72,7 @@ CMakeFiles/SistemaIoT.dir/codegen:
 .PHONY : CMakeFiles/SistemaIoT.dir/codegen
 
 CMakeFiles/SistemaIoT.dir/main.cpp.obj: CMakeFiles/SistemaIoT.dir/flags.make
+CMakeFiles/SistemaIoT.dir/main.cpp.obj: CMakeFiles/SistemaIoT.dir/includes_CXX.rsp
 CMakeFiles/SistemaIoT.dir/main.cpp.obj: C:/Users/resen/Downloads/sp32/main.cpp
 CMakeFiles/SistemaIoT.dir/main.cpp.obj: CMakeFiles/SistemaIoT.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\resen\Downloads\sp32\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/SistemaIoT.dir/main.cpp.obj"

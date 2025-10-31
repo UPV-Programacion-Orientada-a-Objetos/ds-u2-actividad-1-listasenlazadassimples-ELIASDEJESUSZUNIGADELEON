@@ -135,4 +135,9 @@ CMakeFiles/SistemaIoT.dir/main.cpp.obj: \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/basic_ios.tcc \
  C:/msys64/ucrt64/include/c++/14.2.0/bits/ostream.tcc \
  C:/msys64/ucrt64/include/c++/14.2.0/istream \
- C:/msys64/ucrt64/include/c++/14.2.0/bits/istream.tcc
+ C:/msys64/ucrt64/include/c++/14.2.0/bits/istream.tcc \
+ C:/Users/resen/Downloads/sp32/include/SensorBase.h \
+ C:/msys64/ucrt64/include/c++/14.2.0/cstring \
+ C:/msys64/ucrt64/include/string.h \
+ C:/msys64/ucrt64/include/sec_api/string_s.h \
+ C:/Users/resen/Downloads/sp32/include/ListaSensor.h

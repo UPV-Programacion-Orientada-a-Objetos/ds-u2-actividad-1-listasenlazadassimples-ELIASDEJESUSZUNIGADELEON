@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cstdlib>
+#include "SensorBase.h"
+#include "ListaSensor.h"
 
 using namespace std;
 
@@ -66,7 +68,32 @@ void liberarMemoria() {
     cout << "\nLiberando memoria..." << endl;
     cout << "Implementar destructores" << endl;
     //Eliminar todos los nodos de las listas
-    //Eliminar todos los sensores de ListaGestion
+    // TODO: Eliminar todos los sensores de ListaGestion
+}
+
+/**
+ * @brief Funcion de prueba para verificar ListaSensor con templates
+ */
+void pruebaListaGenerica() {
+    cout << "\n=== PRUEBA: Lista Generica con Float ===" << endl;
+    ListaSensor<float> listaTemp;
+    listaTemp.insertar(23.5f);
+    listaTemp.insertar(24.1f);
+    listaTemp.insertar(22.8f);
+    listaTemp.mostrar();
+    cout << "Promedio: " << listaTemp.calcularPromedio() << endl;
+    cout << "Maximo: " << listaTemp.obtenerMaximo() << endl;
+    cout << "Minimo: " << listaTemp.obtenerMinimo() << endl;
+    
+    cout << "\n=== PRUEBA: Lista Generica con Int ===" << endl;
+    ListaSensor<int> listaPresion;
+    listaPresion.insertar(1013);
+    listaPresion.insertar(1015);
+    listaPresion.insertar(1012);
+    listaPresion.mostrar();
+    cout << "Promedio: " << listaPresion.calcularPromedio() << endl;
+    cout << "Maximo: " << listaPresion.obtenerMaximo() << endl;
+    cout << "Minimo: " << listaPresion.obtenerMinimo() << endl;
 }
 
 int main() {
@@ -74,8 +101,14 @@ int main() {
     bool continuar = true;
     
     cout << "\n=== Sistema IoT de Monitoreo Polimorfico ===" << endl;
-    cout << "Version 2 - Estructura del Main con Menu" << endl;
+    cout << "Version 3 - SensorBase + ListaSensor<T> implementadas" << endl;
     cout << "Sistema inicializado correctamente." << endl;
+    
+    // Prueba de las clases recien creadas
+    cout << "\n--- Probando clases base antes del menu ---" << endl;
+    pruebaListaGenerica();
+    cout << "\n--- Presiona ENTER para continuar al menu ---" << endl;
+    cin.get();
 
     // Crear instancia de ListaGestion (lista de SensorBase*)
     // ListaGestion* listaGlobal = new ListaGestion();
@@ -98,7 +131,7 @@ int main() {
                 registrarLectura();
                 break;
             case 4:
-                leerDesdSerial();
+                leerDesdeSerial();
                 break;
             case 5:
                 procesarSensores();
