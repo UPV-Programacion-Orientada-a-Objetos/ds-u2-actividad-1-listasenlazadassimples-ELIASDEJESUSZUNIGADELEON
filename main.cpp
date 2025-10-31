@@ -116,7 +116,8 @@ void leerDesdeSerial() {
 #ifdef _WIN32
         const char* puerto = "COM9";  // Windows
 #elif __linux__
-        const char* puerto = "/dev/ttyUSB0";  // Linux
+        const char* puerto = "/dev/ttyUSB0";  // Linux (hardware real)
+        // Nota: En WSL, el acceso a USB requiere USBIPD (ver WSL_USB_SETUP.md)
 #else
         const char* puerto = "UNKNOWN";
 #endif

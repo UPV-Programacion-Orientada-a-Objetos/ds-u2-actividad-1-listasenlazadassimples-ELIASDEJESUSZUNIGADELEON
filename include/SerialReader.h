@@ -19,7 +19,7 @@ class SerialReader {
 private:
 #ifdef PLATFORM_WINDOWS
     HANDLE hSerial;           ///< Handle del puerto serial en Windows
-#elif PLATFORM_LINUX
+#elif defined(PLATFORM_LINUX)
     int serialPort;           ///< File descriptor en Linux
 #endif
     bool conectado;           ///< Estado de la conexion
@@ -29,13 +29,13 @@ public:
     SerialReader() : conectado(false) {
 #ifdef PLATFORM_WINDOWS
         hSerial = INVALID_HANDLE_VALUE;
-#elif PLATFORM_LINUX
+#elif defined(PLATFORM_LINUX)
         serialPort = -1;
 #endif
         std::cout << "[CONSTRUCTOR] SerialReader creado" << std::endl;
 #ifdef PLATFORM_WINDOWS
         std::cout << "[INFO] Sistema detectado: Windows" << std::endl;
-#elif PLATFORM_LINUX
+#elif defined(PLATFORM_LINUX)
         std::cout << "[INFO] Sistema detectado: Linux" << std::endl;
 #endif
     }
@@ -104,7 +104,7 @@ public:
         std::cout << "[SUCCESS] Puerto serial abierto: " << puerto << std::endl;
         return true;
 
-#elif PLATFORM_LINUX
+#elif defined(PLATFORM_LINUX)
         std::cout << "[SERIAL] Conectando a " << puerto << " (Linux)..." << std::endl;
         
         serialPort = open(puerto, O_RDWR | O_NOCTTY);
@@ -190,7 +190,7 @@ public:
         linea[index] = '\0';
         return false;
 
-#elif PLATFORM_LINUX
+#elif defined(PLATFORM_LINUX)
         int bytesLeidos = read(serialPort, buffer, sizeof(buffer) - 1);
         
         if (bytesLeidos > 0) {
@@ -223,7 +223,7 @@ public:
             CloseHandle(hSerial);
             hSerial = INVALID_HANDLE_VALUE;
         }
-#elif PLATFORM_LINUX
+#elif defined(PLATFORM_LINUX)
         if (serialPort >= 0) {
             close(serialPort);
             serialPort = -1;
